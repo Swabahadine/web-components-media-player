@@ -11,6 +11,8 @@ const idKnobVolume2 = 'knobVolume2';
 
 const idProgressAudio = 'progressAudio';
 
+const idVuMetter = 'idVuMetter';
+
 function selectId( id ) {
   return `#${id}`
 }
@@ -23,6 +25,7 @@ export const ids = {
     idKnobVolume: selectId(idKnobVolume),
     idKnobVolume2: selectId(idKnobVolume2),
     idProgressAudio: selectId(idProgressAudio),
+    idVuMetter: selectId(idVuMetter),
 };
 
 export const myTemplate = ({ src }) =>`
@@ -31,7 +34,7 @@ export const myTemplate = ({ src }) =>`
         color:red;
   }
   canvas {
-    border: 1px solid;
+    border-radius: 6px;
   }
 </style>
 
@@ -44,10 +47,14 @@ export const myTemplate = ({ src }) =>`
   <br>
   Volume: 0 <input id="${idProgressAudio}" type="range" min=0 max=1 step=0.1> 1
   <br>
-  <webaudio-knob id="${idKnobVolume}" tooltip="Volume:%s" src="./assets/imgs/OberKnob.png" sprites="99" value=1 min="0" max="1" step=0.01>
+  <webaudio-switch width="60" height="60" src="./assets/imgs/switch_on_off.png" id="sw1" type="toggle">
+</webaudio-switch><br/>
+  <webaudio-knob id="${idKnobVolume}" tooltip="Volume:%s" src="./assets/imgs/OberKnob.png" sprites="99" value=0.25 min="0" max="1" step=0.01>
       Volume</webaudio-knob>
 
       <webaudio-knob id="${idKnobVolume2}" tooltip="Volume:%s" src="./assets/imgs/bouton2.png" sprites="127" value=0 min="-1" max="1" step=0.01>
       Volume</webaudio-knob>
-      <canvas id="myCanvas2" width=300 height=100></canvas>
+      <canvas id="myCanvas2" width=300 height=100></canvas><br><br>
+      <webaudio-knob id="${idVuMetter}" width=120 height=120 tooltip="Volume:%s" src="./assets/imgs/Vintage_VUMeter_2.png" sprites="50" value=0 min="0" max="1" step=0.01>
+      Volume</webaudio-knob>
       `;

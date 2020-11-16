@@ -2,6 +2,7 @@
 import './lib/webaudio-controls.js';
 
 import { ids, myTemplate } from './template.js'
+import { visualize } from './func.js'
 
 const getBaseURL = () => {
   const base = new URL('.', import.meta.url);
@@ -25,21 +26,31 @@ class MyAudioPlayer extends HTMLElement {
 
     this.basePath = getBaseURL(); // url absolu du composant
     // Fix relative path in WebAudio Controls elements
-		this.fixRelativeImagePaths();
+    this.fixRelativeImagePaths();
+
+    // binding
+    this.visualize = visualize.bind(this)
   }
 
   attributeChangedCallback (name, oldValue, newValue) {
+    console.log('attributeChangedCallback');
     if (name === 'src' && oldValue !== newValue) {
       // console.log('src changeyyyy');
     }
     // console.log(name, newValue);
   }
+  disconnectedCallback() {
+    console.log('disconnected from the DOM');
+  }
 
   connectedCallback() {
     this.player = this.shadowRoot.querySelector(ids.idPlayer);
-      const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
-      this.player.loop = isloop;
+    const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
+    this.player.loop = isloop;
+    const v = this.shadowRoot.querySelector(ids.idKnobVolume)
+    this.setVolume(v.value)
     setTimeout(() => {
+      console.log('setTimeout connectedCallback');
       let audioContext = new AudioContext();
       let playerNode = audioContext.createMediaElementSource(this.player);
   
@@ -60,6 +71,7 @@ class MyAudioPlayer extends HTMLElement {
         .connect(audioContext.destination);
   
       this.canvas = this.shadowRoot.querySelector("#myCanvas2")
+      this.vuMetter = this.shadowRoot.querySelector(ids.idVuMetter)
       console.log('canvas', this.canvas.width);
       this.canvasContext = this.canvas.getContext('2d');
           
@@ -67,6 +79,7 @@ class MyAudioPlayer extends HTMLElement {
   
       this.declareListeners();
     }, 1000)
+    console.log('connectedCallback');
   }
 
   fixRelativeImagePaths() {
@@ -87,6 +100,7 @@ class MyAudioPlayer extends HTMLElement {
   }
   
   declareListeners() {
+    console.log('declare listerner');
     this.shadowRoot.querySelector(ids.idButtonPlay).addEventListener("click", (event) => {
       this.play();
     });
@@ -127,6 +141,17 @@ class MyAudioPlayer extends HTMLElement {
         console.error(e)
       }
     })
+
+    // this.player.addEventListener("timeupdate", (event) => {
+    //   const p = this.shadowRoot.querySelector(ids.idVuMetter)
+    //   try {
+    //     p.max = this.canvas.height;
+    //     p.value = this.maxY || 0
+    //   }
+    //   catch (e){
+    //     console.error(e)
+    //   }
+    // })
   }
 
   // API
@@ -152,55 +177,6 @@ class MyAudioPlayer extends HTMLElement {
 
   reset() {
     this.player.currentTime = 0;
-  }
-
-  visualize = () => {
-    // clear the canvas
-    // like this: canvasContext.clearRect(0, 0, width, height);
-    const width = this.canvas.width;
-    const height = this.canvas.height;
-    
-    // Or use rgba fill to give a slight blur effect
-    this.canvasContext.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    this.canvasContext.fillRect(0, 0, width, height);
-    
-    // Get the analyser data
-    this.analyser.getByteTimeDomainData(this.dataArray);
-  
-    this.canvasContext.lineWidth = 2;
-    this.canvasContext.strokeStyle = 'lightBlue';
-  
-    // all the waveform is in one single path, first let's
-    // clear any previous path that could be in the buffer
-    this.canvasContext.beginPath();
-    
-    var sliceWidth = width / this.bufferLength;
-    var x = 0;
-  
-    for(var i = 0; i < this.bufferLength; i++) {
-       // normalize the value, now between 0 and 1
-       var v = this.dataArray[i] / 255;
-      
-       // We draw from y=0 to height
-       var y = v * height;
-  
-       if(i === 0) {
-          this.canvasContext.moveTo(x, y);
-       } else {
-          this.canvasContext.lineTo(x, y);
-       }
-  
-       x += sliceWidth;
-    }
-  
-    this.canvasContext.lineTo(this.canvas.width, this.canvas.height/2);
-    
-    // draw the path at once
-    this.canvasContext.stroke();  
-    
-    // call again the visualize function at 60 frames/s
-    requestAnimationFrame(this.visualize);
-    
   }
 }
 
