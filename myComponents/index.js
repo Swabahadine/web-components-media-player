@@ -37,35 +37,36 @@ class MyAudioPlayer extends HTMLElement {
 
   connectedCallback() {
     this.player = this.shadowRoot.querySelector(ids.idPlayer);
-    const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
-    this.player.loop = isloop;
-
-    let audioContext = new AudioContext();
-    let playerNode = audioContext.createMediaElementSource(this.player);
-
-    // panner
-    this.pannerNode = audioContext.createStereoPanner();
-
-    // visualization
-    this.analyser = audioContext.createAnalyser();
-    
-    // Try changing for lower values: 512, 256, 128, 64...
-    this.analyser.fftSize = 1024;
-    this.bufferLength = this.analyser.frequencyBinCount;
-    this.dataArray = new Uint8Array(this.bufferLength);
-    
-    playerNode
-      .connect(this.pannerNode)
-      .connect(this.analyser)
-      .connect(audioContext.destination);
-
-    this.canvas = this.shadowRoot.querySelector("#myCanvas2")
-    console.log('canvas', this.canvas.width);
-    this.canvasContext = this.canvas.getContext('2d');
-        
-    requestAnimationFrame(this.visualize);
-
-    this.declareListeners();
+      const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
+      this.player.loop = isloop;
+    setTimeout(() => {
+      let audioContext = new AudioContext();
+      let playerNode = audioContext.createMediaElementSource(this.player);
+  
+      // panner
+      this.pannerNode = audioContext.createStereoPanner();
+  
+      // visualization
+      this.analyser = audioContext.createAnalyser();
+      
+      // Try changing for lower values: 512, 256, 128, 64...
+      this.analyser.fftSize = 1024;
+      this.bufferLength = this.analyser.frequencyBinCount;
+      this.dataArray = new Uint8Array(this.bufferLength);
+      
+      playerNode
+        .connect(this.pannerNode)
+        .connect(this.analyser)
+        .connect(audioContext.destination);
+  
+      this.canvas = this.shadowRoot.querySelector("#myCanvas2")
+      console.log('canvas', this.canvas.width);
+      this.canvasContext = this.canvas.getContext('2d');
+          
+      requestAnimationFrame(this.visualize);
+  
+      this.declareListeners();
+    }, 1000)
   }
 
   fixRelativeImagePaths() {
