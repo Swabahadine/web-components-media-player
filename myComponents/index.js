@@ -78,53 +78,56 @@ class MyAudioPlayer extends HTMLElement {
     this.buttonPlay = this.shadowRoot.querySelector(ids.idButtonPlay);
   }
   async connectedCallback() {
-    this.initCanvas();
-    this.initSelectors();
-    this.initAttributes();
-
-    this.audioContext = new AudioContext();
-    this.playerNode = this.audioContext.createMediaElementSource(this.player);
-  
-    // panner
-    this.pannerNode = this.audioContext.createStereoPanner();
-  
-    // visualization
-    this.analyser = this.audioContext.createAnalyser();
     
-    // Try changing for lower values: 512, 256, 128, 64...
-    this.analyser.fftSize = 1024;
-    this.bufferLength = this.analyser.frequencyBinCount;
-    this.dataArray = new Uint8Array(this.bufferLength);
-
-    this.filters = [];
-
-    [60, 170, 350, 1000, 3500, 10000].forEach((freq, i) => {
-      var eq = this.audioContext.createBiquadFilter();
-      eq.frequency.value = freq;
-      eq.type = "peaking";
-      eq.gain.value = 0;
-      this.filters.push(eq);
-    });
-
-   // Connect this.filters in serie
-   this.playerNode.connect(this.filters[0]);
-   for(var i = 0; i < this.filters.length - 1; i++) {
-      this.filters[i].connect(this.filters[i+1]);
-    }
+    setTimeout(() => {
+      this.initCanvas();
+      this.initSelectors();
+      this.initAttributes();
+      this.audioContext = new AudioContext();
+      this.playerNode = this.audioContext.createMediaElementSource(this.player);
+    
+      // panner
+      this.pannerNode = this.audioContext.createStereoPanner();
+    
+      // visualization
+      this.analyser = this.audioContext.createAnalyser();
+      
+      // Try changing for lower values: 512, 256, 128, 64...
+      this.analyser.fftSize = 1024;
+      this.bufferLength = this.analyser.frequencyBinCount;
+      this.dataArray = new Uint8Array(this.bufferLength);
   
-    // Master volume is a gain node
-    const masterGain = this.audioContext.createGain();
-    masterGain.value = 1;
- 
-
-   // connect the last filter to the speakers
-   this.filters[this.filters.length - 1]
-    .connect(masterGain)
-    .connect(this.pannerNode)
-    .connect(this.analyser)
-    .connect(this.audioContext.destination);
-
-    this.declareListeners();
+      this.filters = [];
+  
+      [60, 170, 350, 1000, 3500, 10000].forEach((freq, i) => {
+        var eq = this.audioContext.createBiquadFilter();
+        eq.frequency.value = freq;
+        eq.type = "peaking";
+        eq.gain.value = 0;
+        this.filters.push(eq);
+      });
+  
+     // Connect this.filters in serie
+     this.playerNode.connect(this.filters[0]);
+     for(var i = 0; i < this.filters.length - 1; i++) {
+        this.filters[i].connect(this.filters[i+1]);
+      }
+    
+      // Master volume is a gain node
+      const masterGain = this.audioContext.createGain();
+      masterGain.value = 1;
+   
+  
+     // connect the last filter to the speakers
+     this.filters[this.filters.length - 1]
+      .connect(masterGain)
+      .connect(this.pannerNode)
+      .connect(this.analyser)
+      .connect(this.audioContext.destination);
+  
+      this.declareListeners();
+    }, 1000);
+    
   }
 
   fixRelativeImagePaths() {
@@ -218,12 +221,12 @@ class MyAudioPlayer extends HTMLElement {
   }
 
   play() {
-    this.player && this.player.play();
+    this.player.play();
     this.buttonPlay.value = 1;
   }
 
   pause() {
-    this.player && this.player.pause();
+    this.player.pause();
     this.buttonPlay.value = 0;
   }
 
