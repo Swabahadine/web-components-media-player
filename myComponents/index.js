@@ -61,8 +61,6 @@ class MyAudioPlayer extends HTMLElement {
     // src
     const src = this.getAttribute('src');
     this.player.src = src;
-    if (this.getAttribute('play') === 'true' || this.getAttribute('play') === '')
-    this.play()
   }
 
   initCanvas() {
