@@ -162,11 +162,11 @@ export const myTemplate = ({ src }) =>`
       </div>
       <div class="row d-flex justify-content-between p-4">
         <div class="col-xs-12 col-md-4 d-flex justify-content-between">
-          <webaudio-knob class="mr-5" id="${idKnobVolume}" tooltip="Volume:%s" src="./assets/imgs/LittlePhatty.png"
-            sprites="100" value=0.25 min="0" max="1" step=0.01>
+          <webaudio-knob class="mr-5" id="${idKnobVolume}" tooltip="Volume:%s" src="./assets/imgs//OberKnob.png"
+            sprites="99" value=0.25 min="0" max="1" step=0.01>
           </webaudio-knob>
 
-          <webaudio-knob id="${idKnobVolume2}" tooltip="Volume:%s" src="./assets/imgs/OberKnob.png" sprites="99" value=0
+          <webaudio-knob id="${idKnobVolume2}" tooltip="Balance:%s" src="./assets/imgs/bouton2.png" sprites="127" value=0
             min="-1" max="1" step=0.01>
           </webaudio-knob>
         </div>
