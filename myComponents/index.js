@@ -2,7 +2,7 @@
 import './lib/webaudio-controls.js';
 
 import { ids, myTemplate } from './template.js'
-import { visualize } from './func.js'
+import { visualize, convertTime } from './func.js'
 
 const getBaseURL = () => {
   const base = new URL('.', import.meta.url);
@@ -35,7 +35,20 @@ class MyAudioPlayer extends HTMLElement {
   attributeChangedCallback (name, oldValue, newValue) {
     console.log('attributeChangedCallback');
     if (name === 'src' && oldValue !== newValue) {
-      // console.log('src changeyyyy');
+      const inputSrc = this.shadowRoot.querySelector('#inputSrc')
+      console.log(inputSrc.value);
+
+      this.shadowRoot.querySelector(ids.idButtonPlay).value = 0;
+      this.pause()
+      this.reset()
+
+       this.shadowRoot.querySelector(ids.idPlayer).src = this.getAttribute('src')
+       this.shadowRoot.querySelector(ids.idButtonPlay).value = 1;
+      this.play()
+    }
+    else if (this.player?.loop && name === 'loop' && oldValue !== newValue) {
+      const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
+      this.player.loop = isloop;
     }
     // console.log(name, newValue);
   }
@@ -43,15 +56,18 @@ class MyAudioPlayer extends HTMLElement {
     console.log('disconnected from the DOM');
   }
 
-  connectedCallback() {
+  async connectedCallback() {
+    const inputSrc = this.shadowRoot.querySelector('#inputSrc')
+      console.log(inputSrc);
+       this.shadowRoot.querySelector(ids.idPlayer).src = inputSrc.value
     this.player = this.shadowRoot.querySelector(ids.idPlayer);
     const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
     this.player.loop = isloop;
+
+    this.timer = this.shadowRoot.querySelector('#timer');
     const v = this.shadowRoot.querySelector(ids.idKnobVolume)
     this.setVolume(v.value)
-    setTimeout(() => {
-      console.log('setTimeout connectedCallback');
-      let audioContext = new AudioContext();
+    let audioContext = new AudioContext();
       let playerNode = audioContext.createMediaElementSource(this.player);
   
       // panner
@@ -78,8 +94,6 @@ class MyAudioPlayer extends HTMLElement {
       requestAnimationFrame(this.visualize);
   
       this.declareListeners();
-    }, 1000)
-    console.log('connectedCallback');
   }
 
   fixRelativeImagePaths() {
@@ -102,16 +116,25 @@ class MyAudioPlayer extends HTMLElement {
   declareListeners() {
     console.log('declare listerner');
     this.shadowRoot.querySelector(ids.idButtonPlay).addEventListener("click", (event) => {
-      this.play();
-    });
-
-    this.shadowRoot.querySelector(ids.idButtonPause).addEventListener("click", (event) => {
-      this.pause();
+      if (event.target.value === 1) this.play();
+      else if (event.target.value === 0) this.pause();
     });
 
     this.shadowRoot.querySelector(ids.idButtonStop).addEventListener("click", (event) => {
       this.reset();
     });
+
+    this.shadowRoot.querySelector('#idLoop').addEventListener("click", (event) => {
+      if (event.target.value === 1) this.setAttribute('loop', "true")
+      else if (event.target.value === 0) this.setAttribute('loop', "false")
+    });
+
+    this.shadowRoot.querySelector('#btnValiderSrc').addEventListener("click", (event) => {
+      const inputSrc = this.shadowRoot.querySelector('#inputSrc')
+      console.log('listener', inputSrc.value);
+      this.setAttribute('src', inputSrc.value)
+    });
+
 
     this.shadowRoot
       .querySelector(ids.idKnobVolume)
@@ -133,6 +156,7 @@ class MyAudioPlayer extends HTMLElement {
 
     this.player.addEventListener("timeupdate", (event) => {
       const p = this.shadowRoot.querySelector(ids.idProgressAudio)
+      this.timer.innerHTML = `${convertTime(event.target.currentTime)}/${convertTime(this.player.duration || 0)}`;
       try {
         p.max = this.player.duration
         p.value = this.player.currentTime

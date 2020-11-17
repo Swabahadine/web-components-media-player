@@ -55,3 +55,10 @@ export function visualize(){
     requestAnimationFrame(this.visualize);
     
   }
+
+  export function convertTime(time){
+   let sec = Math.round(time);
+   let min = Math.floor(sec / 60);
+   sec = sec % 60;
+   return `${min}:${("0" + sec).slice(-2)}`;
+ }
