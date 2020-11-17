@@ -14,7 +14,7 @@ const getBaseURL = () => {
 const template = document.createElement("template");
 
 class MyAudioPlayer extends HTMLElement {
-  static get observedAttributes() { return ['src', 'loop', 'title']; }
+  static get observedAttributes() { return ['src', 'loop', 'title', 'volume']; }
 
   constructor() {
     super();
@@ -33,67 +33,98 @@ class MyAudioPlayer extends HTMLElement {
   }
 
   attributeChangedCallback (name, oldValue, newValue) {
-    console.log('attributeChangedCallback');
-    if (name === 'src' && oldValue !== newValue) {
-      const inputSrc = this.shadowRoot.querySelector('#inputSrc')
-      console.log(inputSrc.value);
-
-      this.shadowRoot.querySelector(ids.idButtonPlay).value = 0;
-      this.pause()
+    if (name === 'src' && newValue && oldValue) {
+      this.player.src = newValue
       this.reset()
-
-       this.shadowRoot.querySelector(ids.idPlayer).src = this.getAttribute('src')
-       this.shadowRoot.querySelector(ids.idButtonPlay).value = 1;
       this.play()
     }
     else if (this.player?.loop && name === 'loop' && oldValue !== newValue) {
       const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
       this.player.loop = isloop;
     }
-    // console.log(name, newValue);
   }
   disconnectedCallback() {
     console.log('disconnected from the DOM');
   }
 
-  async connectedCallback() {
-    const inputSrc = this.shadowRoot.querySelector('#inputSrc')
-      console.log(inputSrc);
-       this.shadowRoot.querySelector(ids.idPlayer).src = inputSrc.value
-    this.player = this.shadowRoot.querySelector(ids.idPlayer);
+  initAttributes() {
+    // loop
     const isloop = this.getAttribute('loop') === 'true' || this.getAttribute('loop') === '';
     this.player.loop = isloop;
+    this.shadowRoot.querySelector('#idLoop').value = isloop ? 1:0;
 
+    // volume 
+    const volume = this.getAttribute('volume') * 0.01;
+    this.setVolume(volume)
+    this.shadowRoot.querySelector(ids.idKnobVolume).value = volume;
+
+    // src
+    const src = this.getAttribute('src');
+    this.player.src = src;
+    if (this.getAttribute('play') === 'true' || this.getAttribute('play') === '')
+    this.play()
+  }
+
+  initCanvas() {
+    this.canvas = this.shadowRoot.querySelector("#myCanvas2")
+    this.vuMetter = this.shadowRoot.querySelector(ids.idVuMetter)
+    this.canvasContext = this.canvas.getContext('2d');
+    requestAnimationFrame(this.visualize);
+  }
+
+  initSelectors() {
+    this.player = this.shadowRoot.querySelector(ids.idPlayer);
     this.timer = this.shadowRoot.querySelector('#timer');
-    const v = this.shadowRoot.querySelector(ids.idKnobVolume)
-    this.setVolume(v.value)
-    let audioContext = new AudioContext();
-      let playerNode = audioContext.createMediaElementSource(this.player);
+    this.buttonPlay = this.shadowRoot.querySelector(ids.idButtonPlay);
+  }
+  async connectedCallback() {
+    this.initCanvas();
+    this.initSelectors();
+    this.initAttributes();
+
+    this.audioContext = new AudioContext();
+    this.playerNode = this.audioContext.createMediaElementSource(this.player);
   
-      // panner
-      this.pannerNode = audioContext.createStereoPanner();
+    // panner
+    this.pannerNode = this.audioContext.createStereoPanner();
   
-      // visualization
-      this.analyser = audioContext.createAnalyser();
-      
-      // Try changing for lower values: 512, 256, 128, 64...
-      this.analyser.fftSize = 1024;
-      this.bufferLength = this.analyser.frequencyBinCount;
-      this.dataArray = new Uint8Array(this.bufferLength);
-      
-      playerNode
-        .connect(this.pannerNode)
-        .connect(this.analyser)
-        .connect(audioContext.destination);
+    // visualization
+    this.analyser = this.audioContext.createAnalyser();
+    
+    // Try changing for lower values: 512, 256, 128, 64...
+    this.analyser.fftSize = 1024;
+    this.bufferLength = this.analyser.frequencyBinCount;
+    this.dataArray = new Uint8Array(this.bufferLength);
+
+    this.filters = [];
+
+    [60, 170, 350, 1000, 3500, 10000].forEach((freq, i) => {
+      var eq = this.audioContext.createBiquadFilter();
+      eq.frequency.value = freq;
+      eq.type = "peaking";
+      eq.gain.value = 0;
+      this.filters.push(eq);
+    });
+
+   // Connect this.filters in serie
+   this.playerNode.connect(this.filters[0]);
+   for(var i = 0; i < this.filters.length - 1; i++) {
+      this.filters[i].connect(this.filters[i+1]);
+    }
   
-      this.canvas = this.shadowRoot.querySelector("#myCanvas2")
-      this.vuMetter = this.shadowRoot.querySelector(ids.idVuMetter)
-      console.log('canvas', this.canvas.width);
-      this.canvasContext = this.canvas.getContext('2d');
-          
-      requestAnimationFrame(this.visualize);
-  
-      this.declareListeners();
+    // Master volume is a gain node
+    const masterGain = this.audioContext.createGain();
+    masterGain.value = 1;
+ 
+
+   // connect the last filter to the speakers
+   this.filters[this.filters.length - 1]
+    .connect(masterGain)
+    .connect(this.pannerNode)
+    .connect(this.analyser)
+    .connect(this.audioContext.destination);
+
+    this.declareListeners();
   }
 
   fixRelativeImagePaths() {
@@ -129,13 +160,6 @@ class MyAudioPlayer extends HTMLElement {
       else if (event.target.value === 0) this.setAttribute('loop', "false")
     });
 
-    this.shadowRoot.querySelector('#btnValiderSrc').addEventListener("click", (event) => {
-      const inputSrc = this.shadowRoot.querySelector('#inputSrc')
-      console.log('listener', inputSrc.value);
-      this.setAttribute('src', inputSrc.value)
-    });
-
-
     this.shadowRoot
       .querySelector(ids.idKnobVolume)
       .addEventListener("input", (event) => {
@@ -143,7 +167,7 @@ class MyAudioPlayer extends HTMLElement {
       });
 
     this.shadowRoot
-      .querySelector(ids.idKnobVolume2)
+      .querySelector(ids.idBalance)
       .addEventListener("input", (event) => {
         this.setBalance(event.target.value)
       });
@@ -153,6 +177,14 @@ class MyAudioPlayer extends HTMLElement {
       .addEventListener("input", (event) => {
         this.setCurrentTime(event.target.value)
       });
+
+    [0, 1, 2, 3, 4, 5].forEach(id => {
+      this.shadowRoot
+      .querySelector(`#inputGain${id}`)
+      .addEventListener("input", (event) => {
+        this.changeGain(event.target.value, id);
+      });
+    })
 
     this.player.addEventListener("timeupdate", (event) => {
       const p = this.shadowRoot.querySelector(ids.idProgressAudio)
@@ -165,17 +197,11 @@ class MyAudioPlayer extends HTMLElement {
         console.error(e)
       }
     })
+  }
 
-    // this.player.addEventListener("timeupdate", (event) => {
-    //   const p = this.shadowRoot.querySelector(ids.idVuMetter)
-    //   try {
-    //     p.max = this.canvas.height;
-    //     p.value = this.maxY || 0
-    //   }
-    //   catch (e){
-    //     console.error(e)
-    //   }
-    // })
+  changeGain(sliderVal,nbFilter) {
+    var value = parseFloat(sliderVal);
+    this.filters[nbFilter].gain.value = value;
   }
 
   // API
@@ -192,15 +218,17 @@ class MyAudioPlayer extends HTMLElement {
   }
 
   play() {
-    this.player.play();
+    this.player && this.player.play();
+    this.buttonPlay.value = 1;
   }
 
   pause() {
-    this.player.pause();
+    this.player && this.player.pause();
+    this.buttonPlay.value = 0;
   }
 
   reset() {
-    this.player.currentTime = 0;
+    if (this.player) this.player.currentTime = 0;
   }
 }
 

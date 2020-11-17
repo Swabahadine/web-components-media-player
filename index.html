@@ -4,15 +4,35 @@
     <meta charset="utf-8">
     <title>Exemple lecteur multimedia</title>
     <script type="module" src="./myComponents/index.js"></script>
-    <!-- <script src="./scripts/app.js"></script> -->
+    <script src="./scripts/app.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
 <body>
     <div style="background-color: rgba(228, 224, 224, 0.253); height: 100%;">
+        <div class="container form-group pt-4">
+            <label for="inputSrc">Source audio</label>
+            <div class="d-flex">
+              <input
+              value=""
+                type="text"
+                class="form-control"
+                id="inputSrc"
+                placeholder="Entrer une url vers une nouvelle musique">
+                <button id="btnValiderSrc" class="ml-2 btn btn-info">
+                Valider
+                </button>
+            </div>
+        </div>
         <my-audioplayer
-        src="https://ia601400.us.archive.org/28/items/townhouse-woods-thank-you-honey/TownhouseWoods-ThankYouHoney.mp3"
-        title="Mon player"
-        loop
+          id="myAuidoPlayer"
+          src="./myComponents/assets/music/ifollowremix.mp3"
+          title="Mon player"
+          loop
+          play
+          volume="25"
     ></my-audioplayer>
 
     </div>

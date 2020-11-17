@@ -7,7 +7,7 @@ const idButtonPause = 'pauseButton';
 const idButtonStop = 'stopButton';
 
 const idKnobVolume = 'knobVolume';
-const idKnobVolume2 = 'knobVolume2';
+const idBalance = 'balance';
 
 const idProgressAudio = 'progressAudio';
 
@@ -23,7 +23,7 @@ export const ids = {
     idButtonPause: selectId(idButtonPause),
     idButtonStop: selectId(idButtonStop),
     idKnobVolume: selectId(idKnobVolume),
-    idKnobVolume2: selectId(idKnobVolume2),
+    idBalance: selectId(idBalance),
     idProgressAudio: selectId(idProgressAudio),
     idVuMetter: selectId(idVuMetter),
 };
@@ -116,20 +116,6 @@ export const myTemplate = ({ src }) =>`
 </style>
 
 <div class="container">
-  <div class="d-flex flex-column">
-    <div class="form-group py-4">
-      <label for="inputSrc">Source audio</label>
-      <input
-      value="https://ia601400.us.archive.org/28/items/townhouse-woods-thank-you-honey/TownhouseWoods-ThankYouHoney.mp3"
-        type="text"
-        class="form-control"
-        id="inputSrc"
-        placeholder="Entrer une url vers une musique">
-        <button id="btnValiderSrc" class="mt-2 btn btn-info">
-        Valider
-        </button>
-    </div>
-  </div>
   <div class="container rounded bg-dark text-white">
     <div class="w-100 row d-flex flex-column">
       <div id="timer" class="rounded text-white text-right p-2">
@@ -155,8 +141,7 @@ export const myTemplate = ({ src }) =>`
 
         <div class="d-flex flex-column justify-content-center align-items-center">
           <div>Loop</div>
-          <webaudio-switch id="idLoop" width="50" height="50" src="./assets/imgs/sphere_scope.png" type="toggle"
-            id="${idButtonPlay}">
+          <webaudio-switch id="idLoop" width="50" height="50" src="./assets/imgs/sphere_scope.png" type="toggle">
             Play</webaudio-switch>
         </div>
       </div>
@@ -166,7 +151,7 @@ export const myTemplate = ({ src }) =>`
             sprites="99" value=0.25 min="0" max="1" step=0.01>
           </webaudio-knob>
 
-          <webaudio-knob id="${idKnobVolume2}" tooltip="Balance:%s" src="./assets/imgs/bouton2.png" sprites="127" value=0
+          <webaudio-knob id="${idBalance}" tooltip="Balance:%s" src="./assets/imgs/bouton2.png" sprites="127" value=0
             min="-1" max="1" step=0.01>
           </webaudio-knob>
         </div>
@@ -179,6 +164,46 @@ export const myTemplate = ({ src }) =>`
       <audio crossorigin style=" width:300px;" id="${idPlayer}">
         <source id="audiosrc" src="${src}" type="audio/mp3" />
       </audio>
+
+    </div>
+    <div class="w-100 d-flex justify-content-around">
+      <div class="controls">
+        <webaudio-knob id="inputGain0" width="50" height="50" id="balanceKnob" sprites="100"
+          src="./assets/imgs/balance.png" value="0" step="1" min="-30" max="30">Balance</webaudio-knob>
+        <br><label>60Hz</label>
+      </div>
+
+
+
+      <div class="controls">
+        <webaudio-knob id="inputGain1" width="50" height="50" id="balanceKnob" sprites="100"
+          src="./assets/imgs/balance.png" value="0" step="1" min="-30" max="30">Balance</webaudio-knob>
+        <br>
+        <label>170Hz</label>
+      </div>
+      <div class="controls">
+        <webaudio-knob id="inputGain2" width="50" height="50" id="balanceKnob" sprites="100"
+          src="./assets/imgs/balance.png" value="0" step="1" min="-30" max="30">Balance</webaudio-knob>
+        <br> <label>350Hz</label>
+      </div>
+      <div class="controls">
+        <webaudio-knob id="inputGain3" width="50" height="50" id="balanceKnob" sprites="100"
+          src="./assets/imgs/balance.png" value="0" step="1" min="-30" max="30">Balance</webaudio-knob>
+        <br><label>1000Hz</label>
+      </div>
+      <div class="controls">
+
+        <webaudio-knob id="inputGain4" width="50" height="50" id="balanceKnob" sprites="100"
+          src="./assets/imgs/balance.png" value="0" step="1" min="-30" max="30">Balance</webaudio-knob>
+        <br><label>3500Hz</label>
+      </div>
+      <div class="controls">
+
+        <webaudio-knob id="inputGain5" width="50" height="50" id="balanceKnob" sprites="100"
+          src="./assets/imgs/balance.png" value="0" step="1" min="-30" max="30">Balance</webaudio-knob>
+        <br><label>10000Hz</label>
+        <p>
+      </div>
     </div>
   </div>
       `;
