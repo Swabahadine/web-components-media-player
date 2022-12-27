@@ -1394,8 +1394,10 @@ webaudio-switch{
             passive: false,
           });
           this.redraw();
-          e.preventDefault();
-          e.stopPropagation();
+          if (e.preventDefault) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
           return false;
         }
       }
